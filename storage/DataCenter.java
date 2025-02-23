@@ -1,4 +1,8 @@
-package core;
+package storage;
+
+import core.ComputeNode;
+import core.Task;
+import core.VirtualMachine;
 
 import java.util.ArrayList;
 import java.util.List;
