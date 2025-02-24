@@ -30,4 +30,31 @@ public class NetworkGraph {
         }
     }
 
+    public List<NetworkNode> getShortestPath(String SourceId, String targetId) {
+        Map<NetworkNode, Integer> distances = new HashMap<>();
+        Map<NetworkNode, NetworkNode> previous = new HashMap<>();
+        PriorityQueue<NetworkNode> queue = new PriorityQueue<>(
+                (n1, n2) -> Integer.compare(distances.getOrDefault(n1, Integer.MAX_VALUE), distances.getOrDefault(n2, Integer.MAX_VALUE))
+        );
+        NetworkNode source = nodes.get(SourceId);
+        NetworkNode target = nodes.get(targetId);
+        if(source == null || target == null){
+            return null;
+        }
+
+        for (NetworkNode node : nodes.values()) {
+            distances.put(node, Integer.MAX_VALUE);
+            previous.put(node, null);
+            queue.add(node);
+
+        }
+        distances.put(source, 0);
+
+        while (!queue.isEmpty()){
+            NetworkNode u = queue.poll();
+            if(u.equals(target)) break;
+        }
+        return null;
+    }
+
 }
