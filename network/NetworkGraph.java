@@ -53,6 +53,24 @@ public class NetworkGraph {
         while (!queue.isEmpty()){
             NetworkNode u = queue.poll();
             if(u.equals(target)) break;
+            for (Edge edge: u.getConnections()) {
+                NetworkNode v = edge.getTo();
+                int alt = distances.get(u) + edge.getLatency();
+                if (alt < distances.getOrDefault(v, Integer.MAX_VALUE)){
+                    distances.put(v, alt);
+                    previous.put(v, u);
+                    queue.remove(v);
+                    queue.add(v);
+                }
+            }
+        }
+
+        List<NetworkNode> Path = new ArrayList<>();
+        for (NetworkNode at = target; at != null; at = previous.get(at)) {
+            Path.add(0,at);
+        }
+        if (!Path.isEmpty() && Path.get(0).equals(source)){
+            return Path;
         }
         return null;
     }
