@@ -3,6 +3,7 @@ package scheduler;
 import core.*;
 import java.util.*;
 
+// send to least VM
 public class Scheduler {
     private PriorityQueue<Task> taskQueue;
 
