@@ -86,13 +86,13 @@ We set `Node2` to `Node9` to be heavily loaded (CPU=1.0, MEM=1.0), and `Node1`, 
 - Our algorithm prevents overloading, improving system reliability.
 - The cost model is flexible and tunable per use-case.
 
-## 🌐 Real-World Relevance
+##  Real-World Relevance
 
 - Cloud Providers (AWS, GCP, Azure) could benefit from this strategy to route traffic around busy zones.
 - Edge computing, mesh networks, CDNs, and distributed systems can adopt similar routing intelligence.
 - Extensible to include bandwidth, disk I/O, or security parameters in future versions.
 
-## 🎓 Future Enhancements
+##  Future Enhancements
 
 - Dynamic load adjustment during runtime
 - Graph visualization of path differences
