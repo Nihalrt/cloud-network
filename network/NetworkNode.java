@@ -3,7 +3,6 @@ package network;
 import java.util.*;
 
 public class NetworkNode {
-
     private String id;
     private List<Edge> connections;
     private double currentCpuLoad;
@@ -16,7 +15,7 @@ public class NetworkNode {
         this.currentMemLoad = 0.0;
     }
 
-    // ✅ Getters and Setters
+    // Getters and setters
     public String getId() {
         return id;
     }
@@ -29,27 +28,22 @@ public class NetworkNode {
         this.connections.add(edge);
     }
 
-    // ✅ CPU Load Handling
     public double getCurrentCpuLoad() {
         return currentCpuLoad;
     }
 
     public void setCurrentCpuLoad(double currentCpuLoad) {
         this.currentCpuLoad = Math.max(0.0, Math.min(1.0, currentCpuLoad));
-        // Clamps value between 0 and 1 (0% to 100%)
     }
 
-    // ✅ Memory Load Handling
     public double getCurrentMemLoad() {
         return currentMemLoad;
     }
 
     public void setCurrentMemLoad(double currentMemLoad) {
         this.currentMemLoad = Math.max(0.0, Math.min(1.0, currentMemLoad));
-        // Clamps value between 0 and 1 (0% to 100%)
     }
 
-    // ✅ Override equals() and hashCode()
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -63,7 +57,6 @@ public class NetworkNode {
         return Objects.hash(id);
     }
 
-    // ✅ Override toString() for better logging/debugging
     @Override
     public String toString() {
         return "NetworkNode{" +

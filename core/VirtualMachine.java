@@ -30,7 +30,7 @@ public class VirtualMachine {
 
     public void addTask(Task task){
         taskQueue.offer(task);
-        System.out.println("VM" + id + " received task " + task);
+        System.out.println(id + " " + " received task " + task);
     }
 
     public void processTasks(){
@@ -39,11 +39,11 @@ public class VirtualMachine {
 
             int newtime = currentTask.getExecutionTime()-1;
             if(newtime<=0){
-                System.out.println("VM" + id + "finished processing task " + currentTask);
+                System.out.println(id + " " + "finished processing task " + currentTask);
                 taskQueue.poll();
             } else{
 
-                System.out.println("VM" + id + "processing task: " + currentTask.getTaskId() + " (remaining time: " + newtime + ")");
+                System.out.println( id + " " + "processing task: " + currentTask.getTaskId() + " (remaining time: " + newtime + ")");
             }
 
 

@@ -1,105 +1,81 @@
-import core.*;
-import network.*;
-import simulation.*;
-import storage.DataCenter;
 
+
+import network.*;
 import java.util.List;
 
 public class main {
-
     public static void main(String[] args) {
-        // Initialize DataCenter
-        DataCenter dataCenter = new DataCenter();
+        System.out.println("=== STARTING MAIN PROGRAM ===");
 
-        // Create Network Graph
+        // 1) Create the graph
         NetworkGraph graph = new NetworkGraph();
 
-        // Create Compute Nodes as Network Nodes
-        ComputeNode node1 = new ComputeNode("Node1", 16, 32768);
-        ComputeNode node2 = new ComputeNode("Node2", 16, 32768);
-        ComputeNode node3 = new ComputeNode("Node3", 16, 32768);
-
-        // Create Virtual Machines and assign to Nodes
-        VirtualMachine VM1 = new VirtualMachine("VM1", 4, 8192);
-        VirtualMachine VM2 = new VirtualMachine("VM2", 4, 8192);
-        VirtualMachine VM3 = new VirtualMachine("VM3", 4, 8192);
-        VirtualMachine VM4 = new VirtualMachine("VM4", 4, 8192);
-
-        node1.addVM(VM1);
-        node1.addVM(VM2);
-        node2.addVM(VM3);
-        node3.addVM(VM4);
-
-        // Add Compute Nodes to DataCenter and Graph
-        dataCenter.addNode(node1);
-        dataCenter.addNode(node2);
-        dataCenter.addNode(node3);
-
-        // Convert ComputeNode to NetworkNode
-        NetworkNode networkNode1 = new NetworkNode("Node1");
-        NetworkNode networkNode2 = new NetworkNode("Node2");
-        NetworkNode networkNode3 = new NetworkNode("Node3");
-
-        graph.addNode(networkNode1);
-        graph.addNode(networkNode2);
-        graph.addNode(networkNode3);
-
-        // Create Edges (latency between nodes)
-        graph.addEdge("Node1", "Node2", 2);
-        graph.addEdge("Node2", "Node3", 3);
-        graph.addEdge("Node1", "Node3", 4);
-
-        // Set CPU and Memory Load Based on VM Utilization
-        networkNode1.setCurrentCpuLoad(0.6); // 60% CPU usage
-        networkNode1.setCurrentMemLoad(0.5); // 50% Memory usage
-
-        networkNode2.setCurrentCpuLoad(0.2);
-        networkNode2.setCurrentMemLoad(0.3);
-
-        networkNode3.setCurrentCpuLoad(0.8); // High load → should avoid this node
-        networkNode3.setCurrentMemLoad(0.7);
-
-        // Define Weight Factors for Cost Function
-        double alpha = 1.0; // Latency weight
-        double beta = 2.0;  // CPU weight
-        double gamma = 1.5; // Memory weight
-
-        // Run ResourceAwareRouting
-        ResourceAwareRouting router = new ResourceAwareRouting(alpha, beta, gamma);
-        List<NetworkNode> resourceAwarePath = router.findPath(graph, "Node1", "Node3");
-
-        System.out.println("\n=== Resource-Aware Routing Result ===");
-        if (resourceAwarePath != null) {
-            System.out.println("Path: " + resourceAwarePath);
-            System.out.println("Total Cost: " + router.getCostTo(networkNode3));
-        } else {
-            System.out.println("No path found.");
+        // 2) Create 10 nodes: Node1..Node10
+        NetworkNode[] nodes = new NetworkNode[11];
+        for (int i = 1; i <= 10; i++) {
+            nodes[i] = new NetworkNode("Node" + i);
+            graph.addNode(nodes[i]);
         }
 
-        // Compare with Traditional Shortest Path
-        List<NetworkNode> shortestPath = graph.getShortestPath("Node1", "Node3");
+        // 3) Create ring edges: Node1->Node2->...->Node10
+        // each with latency=1 => ring total is 9
+        for (int i = 1; i < 10; i++) {
+            graph.addEdge("Node" + i, "Node" + (i+1), 1);
+        }
 
-        System.out.println("\n=== Traditional Shortest Path Result ===");
+        // Add a direct edge from Node1->Node10 with latency=12
+        // => Traditional sees ring=9 <12 => picks ring
+        // => ResourceAware sees ring cost is huge (due to CPU=1, MEM=1) => picks direct
+        graph.addEdge("Node1", "Node10", 12);
+
+        // 4) Resource loads
+        // Node1, Node10 => CPU=0, MEM=0
+        nodes[1].setCurrentCpuLoad(0.0);
+        nodes[1].setCurrentMemLoad(0.0);
+        nodes[10].setCurrentCpuLoad(0.0);
+        nodes[10].setCurrentMemLoad(0.0);
+
+        // Node2..Node9 => CPU=1, MEM=1
+        for (int i = 2; i < 10; i++) {
+            nodes[i].setCurrentCpuLoad(1.0);
+            nodes[i].setCurrentMemLoad(1.0);
+        }
+
+        // 5) ResourceAwareRouting
+        ResourceAwareRouting router = new ResourceAwareRouting(1.0, 2.0, 1.5);
+        System.out.println("\n=== RESOURCE-AWARE ROUTING ===");
+        List<NetworkNode> resourcePath = router.findPath(graph, "Node1", "Node10");
+        if (resourcePath != null) {
+            System.out.println("ResourceAware Path: " + resourcePath);
+            double totalCost = router.getCostTo(nodes[10]);
+            System.out.println("ResourceAware Cost: " + totalCost);
+        } else {
+            System.out.println("No resource-aware path found.");
+        }
+
+        // 6) Traditional Shortest Path
+        System.out.println("\n=== TRADITIONAL SHORTEST PATH ===");
+        List<NetworkNode> shortestPath = graph.getShortestPath("Node1", "Node10");
         if (shortestPath != null) {
-            System.out.println("Path: " + shortestPath);
-            int totalCost = 0;
+            System.out.println("Shortest Path: " + shortestPath);
+
+            // Sum up latencies
+            int totalLatency = 0;
             for (int i = 0; i < shortestPath.size() - 1; i++) {
                 NetworkNode from = shortestPath.get(i);
                 NetworkNode to = shortestPath.get(i + 1);
-                for (Edge edge : from.getConnections()) {
-                    if (edge.getTo().equals(to)) {
-                        totalCost += edge.getLatency();
+                for (Edge e : from.getConnections()) {
+                    if (e.getTo().equals(to)) {
+                        totalLatency += e.getLatency();
                         break;
                     }
                 }
             }
-            System.out.println("Total Latency: " + totalCost);
+            System.out.println("Total Latency: " + totalLatency);
         } else {
-            System.out.println("No path found.");
+            System.out.println("No path found (Traditional).");
         }
 
-        // Start Task Simulation
-        EventSimulator simulator = new EventSimulator(dataCenter);
-        simulator.runSimulation(10);
+        System.out.println("\n=== DONE! ===");
     }
 }
